@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>CSV import</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/main.css" />
+</head>
+
+<body>
+    <main>
+        <div class="container" id="container-wrapper">
+            <div class="row">
+                <div class="col s2" id="sidebar">
+                    <div class="status-list">
+                        <span class="title-span">Status</span>
+                        <ul>
+                            <li id="li-all"><span class="li-label">Todos</span>
+                                <span class="li-value"></span>
+                            </li>
+                            <li id="li-complete"><span class="li-label">Completo</span>
+                                <span class="li-value"></span>
+                            </li>
+                            <li id="li-in-progress"><span class="li-label">Pendente</span>
+                                <span class="li-value"></span>
+                            </li>
+                            <li id="li-erro"><span class="li-label">Erro</span>
+                                <span class="li-value"></span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="actions-list">
+                        <span class="title-span">Ferramentas</span>
+                        <ul>
+                            <li id="li-import">
+                                <span class="li-label">
+                                    <input type="file" name="file" id="file" class="inputfile" />
+                                    <label for="file" class="label-input">Importar CSV</label>
+                                </span>
+                            </li>
+                            <li id="li-login"><span class="li-label" id="action-login" style="cursor:pointer"><a href="#modal-login"
+                                        class="modal-trigger">Loggar</a></span>
+                            </li>
+                            <li id="li-request"><span class="li-label" id="action-request" style="cursor:pointer">Enviar para api</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="store-list" style="display:none">
+                        <span class="title-span">Store</span>
+                        <ul>
+                            <li id="li-store-id"><span class="li-label">Id</span>
+                                <span class="li-value truncate"></span>
+                            </li>
+                            <li id="li-store-user"><span class="li-label">User</span>
+                                <span class="li-value truncate"></span>
+                            </li>
+                            <li id="li-store-auth"><span class="li-label">Auth</span>
+                                <span class="li-value truncate"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col s10" id="parse-result">
+                    <div class="wrapper-result">
+                        <div id="wrapper-result-content">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Modal Structure -->
+    <div id="modal-login" class="modal">
+        <div class="modal-content">
+            <h4>Login</h4>
+            <form id="form-login">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="username" type="text">
+                        <label for="username">Usuário</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="password" type="password" class="validate">
+                        <label for="password">Password</label>
+                    </div>
+                </div>
+                <button type="button" class="waves-effect waves-green btn-flat" id="action-loggar">Loggar</button>                
+            </form>
+            <div id="erro"></div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="assets/js/papaparse.min.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+
+</html>
