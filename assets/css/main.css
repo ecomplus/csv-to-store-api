@@ -47,7 +47,7 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 35px;
+    min-height: 35px;
     padding: 0 10px;
 }
 
@@ -88,9 +88,6 @@ main {
     color: rgb(0, 0, 0);
 }
 
-.actions-list ul, .status-list ul {
-    /* padding-left: 1em; */
-}
 
 .actions-list ul li, .status-list ul li {
     padding: .2em 0;
@@ -161,6 +158,30 @@ li#li-erro:before {
     box-shadow: inset 0 1px 1px 0 rgba(0,0,0,0.14), inset 0 3px 1px -2px rgba(0,0,0,0.12), inset 0 1px 5px 0 rgba(0,0,0,0.2);
 }
 
+.actions-list ul li:nth-child(2n+0) {
+    background: #f8f8f8;
+    border-radius: 50px;
+}
+
+.actions-list ul li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+
+.store-list ul li:nth-child(2n+0) {
+    background: #f8f8f8;
+    border-radius: 50px;
+}
+
+.store-list ul li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+
 span.li-label {
     left: 30px;
     position: relative;
@@ -179,15 +200,10 @@ span.li-label {
     opacity: .8;
 }
 
-.store-list {}
-
 .store-list span.li-label {
     left: 0;
     padding-right: 15px;
 }
-
-.store-list ul {}
-
 .store-list ul li {
     display: flex;
     justify-content: space-between;
@@ -199,6 +215,12 @@ span.li-label {
 .status-list ul li {
     display: flex;
     justify-content: space-between;
+    padding: 10px;
+}
+
+.status-list ul li:nth-child(2n+0) {
+    background: #f8f8f8;
+    border-radius: 50px;
 }
 
 .valid:before {
