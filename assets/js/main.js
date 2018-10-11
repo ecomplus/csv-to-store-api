@@ -1,19 +1,19 @@
 $(function () {
   $('.modal').modal();
 
-  let path_login = 'https://api.e-com.plus/v1/_login.json?username';
-  let path_product = 'https://api.e-com.plus/v1/products.json';
+  var path_login = 'https://api.e-com.plus/v1/_login.json?username';
+  var path_product = 'https://api.e-com.plus/v1/products.json';
 
-  let _id;
-  let _store_id;
-  let _key;
-  let _data;
-  let _erro = [];
+  var _id;
+  var _store_id;
+  var _key;
+  var _data;
+  var _erro = [];
 
-  let btn_login = $('#action-loggar');
-  let btn_send = $('#action-request');
-  let _input = $('#file');
-  let result_element = $('#wrapper-result-content');
+  var btn_login = $('#action-loggar');
+  var btn_send = $('#action-request');
+  var _input = $('#file');
+  var result_element = $('#wrapper-result-content');
 
   _input.unbind('change').on('change', parse_cvs);
   btn_login.unbind('click').on('click', login);
@@ -41,7 +41,7 @@ $(function () {
   }
 
   function table_element(csv) {
-    let content = '';
+    var content = '';
 
     csv['data'].forEach(function (element, chave) {
 
@@ -74,8 +74,8 @@ $(function () {
 
   function login() {
     is_valid();
-    let u = $('#username').val();
-    let p = $('#password').val();
+    var u = $('#username').val();
+    var p = $('#password').val();
     p = md_5(p);
 
     $.ajax({
@@ -117,54 +117,48 @@ $(function () {
   }
 
   function verify_schema(item) {
-    
-    let current_item = JSON.parse(item);
-    let new_item = {};
-    let res = {};
+
+    var current_item = Object.expand(item);
+    var new_item = {};
+    var rgx_array = /\[([^\]]+)\]/g;
+    var rgx_array_empty = /\[()\]/;
+
     for (const key in current_item) {
-
       if (current_item.hasOwnProperty(key)) {
-        const element = current_item;
-        if (typeof element[key] === 'object') {
-          for (const chave in element[key]) {
+        if (typeof current_item[key] === 'object') {
+          if (rgx_array.test(key)) {
+            new_item[key.replace(rgx_array, "")] = new_item[key] || [];
+            new_item[key.replace(rgx_array, "")].push(current_item[key]);
+          } else {
+            for (const chave in current_item[key]) {
 
-            new_item[key] = new_item[key] || {};
-            let rgx = /\[([^\]]+)\]/g;
-            if (typeof element[key] === 'object') {
-              if (rgx.test(chave)) {
-                let index = chave.replace(rgx, "");
-                new_item[key][index] = new_item[key][index] || [];
-                new_item[key][index].push([element[key][chave]]);
+              new_item[key] = new_item[key] || {};
+
+              if (typeof current_item[key] === 'object') {
+                if (rgx_array.test(chave)) {
+                  var index = chave.replace(rgx_array, "");
+                  new_item[key][index] = new_item[key][index] || [];
+                  new_item[key][index].push(current_item[key][chave]);
+                } else {
+                  var index = chave.replace(rgx_array, "");
+                  new_item[key][index] = current_item[key][chave];
+                }
               } else {
-                let index = chave.replace(rgx, "");
-                new_item[key][index] = element[key][chave];
+                new_item[key] = current_item[key][chave];
               }
-            } else {
-              new_item[key] = element[key][chave];
             }
           }
         } else {
-          new_item[key] = current_item[key];
+          if (rgx_array_empty.test(key)) {
+            new_item[key.replace(rgx_array_empty, "")] = current_item[key].split(',');
+          } else {
+            new_item[key] = current_item[key];
+          }
         }
       }
     }
-    console.log(new_item)
-    res['result'] = [];
-    res['result'].push(new_item);
-    console.log(res);
-    return res;
-
-    //current_item.specifications.size = [current_item.specifications.size];
-    //current_item.specifications.desenho = [current_item.specifications.desenho];
-    //current_item.specifications.composicao = [current_item.specifications.composicao];
-    //current_item.specifications.linha = [current_item.specifications.linha];
-    //current_item.specifications.colecao = [current_item.specifications.colecao];
-    //current_item.specifications.segmento = [current_item.specifications.segmento];
-    //current_item.gtin = [current_item.gtin];
-    //current_item.metafields = [current_item.metafields];
-    //current_item.weight.value = parseFloat(current_item.weight.value);
-    //return current_item;
-
+    console.log(JSON.stringify(new_item, undefined, 4));
+    return JSON.stringify(new_item);
   }
 
   function insert_product() {
@@ -180,9 +174,6 @@ $(function () {
     }
 
     _data.forEach(function (el, index) {
-      let parse_ = verify_schema(JSON.stringify(Object.expand(el)));
-      console.log(JSON.stringify(parse_))
-      parse_ = JSON.stringify(parse_['result'][0])
       $.ajax({
         type: "POST",
         url: path_product,
@@ -191,7 +182,7 @@ $(function () {
           'X-Access-Token': _key,
           'X-My-Id': _id
         },
-        data: parse_,
+        data: verify_schema(el),
         contentType: "application/json",
         dataType: 'json',
         success: function (res) {
@@ -203,13 +194,14 @@ $(function () {
       });
     });
     console.log(_erro);
+    console_erros();
   }
 
   function insert_fail(err, id) {
     if (err.responseJSON.error_code) {
-      _erro['key'] = id
-      _erro['message'] = err.responseJSON.user_message.pt_br;
+      _erro = { key: id, message: err.responseJSON.user_message.pt_br };
     }
+    return;
   }
 
   function insert_success(id) {
@@ -247,6 +239,16 @@ $(function () {
 
   }
 
+  function console_erros() {
+    $(document).removeClass('table-erro ');
+    if (_erro) {
+      $.each(_erro, function (k, v) {
+        console.log(k)
+        console.log(v)
+      })
+    }
+  }
+
   function parseDotNotation(str, val, obj) {
     var currentObj = obj, //objeto atual
       keys = str.split("."), // explode '.' da chave e transforma em array
@@ -258,11 +260,11 @@ $(function () {
       currentObj[key] = currentObj[key] || {}; // se não existir cria novo obj
       currentObj = currentObj[key]; // atual objeto recebe ele
     }
-    let reg = /^-?\d+\,?\.?\d*$/; // verificar se é 0,00 ou 0.00
-    if(reg.test(val)){
-      currentObj[keys[i]] = parseFloat(val.replace(',','.').trim());    // objeto com a chave na posição de i recebe o valor 
-    }else{
-    currentObj[keys[i]] = val.trim();    // objeto com a chave na posição de i recebe o valor 
+    var reg = /^-?\d+\,?\.?\d*$/; // verificar se é 0,00 ou 0.00
+    if (reg.test(val)) {
+      currentObj[keys[i]] = parseFloat(val.replace(',', '.').trim());
+    } else {
+      currentObj[keys[i]] = val.trim();    // objeto com a chave na posição de i recebe o valor 
     }
     delete obj[str];
   }
