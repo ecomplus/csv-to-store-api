@@ -127,7 +127,7 @@ $(function () {
       if (current_item.hasOwnProperty(key)) {
         if (typeof current_item[key] === 'object') {
           if (rgx_array.test(key)) {
-            new_item[key.replace(rgx_array, "")] = new_item[key] || [];
+            new_item[key.replace(rgx_array, "")] = new_item[key.replace(rgx_array, "")] || [];
             new_item[key.replace(rgx_array, "")].push(current_item[key]);
           } else {
             for (const chave in current_item[key]) {
@@ -150,7 +150,10 @@ $(function () {
           }
         } else {
           if (rgx_array_empty.test(key)) {
-            new_item[key.replace(rgx_array_empty, "")] = current_item[key].split(',');
+            new_item[key.replace(rgx_array_empty, "")] = current_item[key].replace('\\', ',').split(',').map(function (trim) {
+              return trim.trim();
+            });
+
           } else {
             new_item[key] = current_item[key];
           }
@@ -174,32 +177,36 @@ $(function () {
     }
 
     _data.forEach(function (el, index) {
-      $.ajax({
-        type: "POST",
-        url: path_product,
-        headers: {
-          'X-Store-ID': _store_id,
-          'X-Access-Token': _key,
-          'X-My-Id': _id
-        },
-        data: verify_schema(el),
-        contentType: "application/json",
-        dataType: 'json',
-        success: function (res) {
-          insert_success(index);
-        },
-        error: function (err) {
-          insert_fail(err, index);
-        }
-      });
+      setTimeout(function () {
+        $.ajax({
+          type: "POST",
+          url: path_product,
+          headers: {
+            'X-Store-ID': _store_id,
+            'X-Access-Token': _key,
+            'X-My-Id': _id
+          },
+          data: verify_schema(el),
+          contentType: "application/json",
+          dataType: 'json',
+          success: function (res) {
+            insert_success(index);
+          },
+          error: function (err) {
+            insert_fail(err, index);
+          }
+        });
+      }, 1000)
     });
-    console.log(_erro);
     console_erros();
   }
 
   function insert_fail(err, id) {
     if (err.responseJSON.error_code) {
-      _erro = { key: id, message: err.responseJSON.user_message.pt_br };
+      var erro = {}
+      erro['key'] = id;
+      erro['message'] = err.responseJSON.user_message.pt_br;
+      _erro.push(erro);
     }
     return;
   }
@@ -242,11 +249,12 @@ $(function () {
   function console_erros() {
     $(document).removeClass('table-erro ');
     if (_erro) {
-      $.each(_erro, function (k, v) {
-        console.log(k)
-        console.log(v)
-      })
+      console.log(_erro)
+      for (const key in _erro) {
+        console.log(key)
+      }
     }
+
   }
 
   function parseDotNotation(str, val, obj) {
