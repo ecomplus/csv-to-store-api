@@ -117,15 +117,14 @@ $(function () {
   }
 
   function verify_schema(item) {
-
+    
     let current_item = JSON.parse(item);
-    let new_item = [];
-
+    let new_item = {};
+    let res = {};
     for (const key in current_item) {
 
       if (current_item.hasOwnProperty(key)) {
         const element = current_item;
-
         if (typeof element[key] === 'object') {
           for (const chave in element[key]) {
 
@@ -133,12 +132,12 @@ $(function () {
             let rgx = /\[([^\]]+)\]/g;
             if (typeof element[key] === 'object') {
               if (rgx.test(chave)) {
-                let index = chave.replace(/\[([^\]]+)\]/g, "");
+                let index = chave.replace(rgx, "");
                 new_item[key][index] = new_item[key][index] || [];
-                new_item[key][index].push(element[key][chave]);
+                new_item[key][index].push([element[key][chave]]);
               } else {
-                let index = chave.replace(/\[([^\]]+)\]/g, "");
-                new_item[key][index] = [element[key][chave]];
+                let index = chave.replace(rgx, "");
+                new_item[key][index] = element[key][chave];
               }
             } else {
               new_item[key] = element[key][chave];
@@ -149,8 +148,11 @@ $(function () {
         }
       }
     }
-
-    return new_item;
+    console.log(new_item)
+    res['result'] = [];
+    res['result'].push(new_item);
+    console.log(res);
+    return res;
 
     //current_item.specifications.size = [current_item.specifications.size];
     //current_item.specifications.desenho = [current_item.specifications.desenho];
@@ -179,8 +181,8 @@ $(function () {
 
     _data.forEach(function (el, index) {
       let parse_ = verify_schema(JSON.stringify(Object.expand(el)));
-      console.log(typeof parse_ === 'object')
-      console.log(JSON.stringify(parse_, null, 2))
+      console.log(JSON.stringify(parse_))
+      parse_ = JSON.stringify(parse_['result'][0])
       $.ajax({
         type: "POST",
         url: path_product,
@@ -256,8 +258,12 @@ $(function () {
       currentObj[key] = currentObj[key] || {}; // se não existir cria novo obj
       currentObj = currentObj[key]; // atual objeto recebe ele
     }
-
-    currentObj[keys[i]] = val;    // objeto com a chave na posição de i recebe o valor 
+    let reg = /^-?\d+\,?\.?\d*$/; // verificar se é 0,00 ou 0.00
+    if(reg.test(val)){
+      currentObj[keys[i]] = parseFloat(val.replace(',','.').trim());    // objeto com a chave na posição de i recebe o valor 
+    }else{
+    currentObj[keys[i]] = val.trim();    // objeto com a chave na posição de i recebe o valor 
+    }
     delete obj[str];
   }
 
