@@ -175,30 +175,43 @@ $(function () {
       console.log('Login é necessário.');
       return;
     }
+    
+    var count_request = 0;
 
     _data.forEach(function (el, index) {
-      setTimeout(function () {
-        $.ajax({
-          type: "POST",
-          url: path_product,
-          headers: {
-            'X-Store-ID': _store_id,
-            'X-Access-Token': _key,
-            'X-My-Id': _id
-          },
-          data: verify_schema(el),
-          contentType: "application/json",
-          dataType: 'json',
-          success: function (res) {
-            insert_success(index);
-          },
-          error: function (err) {
-            insert_fail(err, index);
-          }
-        });
-      }, 1000)
+      if(count_request < 5){
+        request(el, index)
+        count_request++;
+      }else{
+        setTimeout(function () {
+          request(el, index)
+          count_request = 0;
+        }, 5000);
+      }
+      console.log(count_request)
     });
     console_erros();
+  }
+
+  function request(el, index){
+    $.ajax({
+      type: "POST",
+      url: path_product,
+      headers: {
+        'X-Store-ID': _store_id,
+        'X-Access-Token': _key,
+        'X-My-Id': _id
+      },
+      data: verify_schema(el),
+      contentType: "application/json",
+      dataType: 'json',
+      success: function (res) {
+        insert_success(index);
+      },
+      error: function (err) {
+        insert_fail(err, index);
+      }
+    });
   }
 
   function insert_fail(err, id) {
