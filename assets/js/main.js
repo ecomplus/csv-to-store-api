@@ -179,7 +179,7 @@ $(function () {
     _data.forEach(function (el, index) {
       setTimeout(function () {
         request(el, index)
-      }, 500 * index);
+      }, 1000 * index);
     });
     console_erros();
   }
