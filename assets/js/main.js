@@ -175,20 +175,11 @@ $(function () {
       console.log('Login é necessário.');
       return;
     }
-    
-    var count_request = 0;
 
     _data.forEach(function (el, index) {
-      if(count_request < 5){
+      setTimeout(function () {
         request(el, index)
-        count_request++;
-      }else{
-        setTimeout(function () {
-          request(el, index)
-          count_request = 0;
-        }, 5000);
-      }
-      console.log(count_request)
+      }, 500 * index);
     });
     console_erros();
   }
