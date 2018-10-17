@@ -125,37 +125,39 @@ $(function () {
 
     for (const key in current_item) {
       if (current_item.hasOwnProperty(key)) {
-        if (typeof current_item[key] === 'object') {
-          if (rgx_array.test(key)) {
-            new_item[key.replace(rgx_array, "")] = new_item[key.replace(rgx_array, "")] || [];
-            new_item[key.replace(rgx_array, "")].push(current_item[key]);
-          } else {
-            for (const chave in current_item[key]) {
+        if (current_item[key] != '') {
+          if (typeof current_item[key] === 'object') {
+            if (rgx_array.test(key)) {
+              new_item[key.replace(rgx_array, "")] = new_item[key.replace(rgx_array, "")] || [];
+              new_item[key.replace(rgx_array, "")].push(current_item[key]);
+            } else {
+              for (const chave in current_item[key]) {
 
-              new_item[key] = new_item[key] || {};
+                new_item[key] = new_item[key] || {};
 
-              if (typeof current_item[key] === 'object') {
-                if (rgx_array.test(chave)) {
-                  var index = chave.replace(rgx_array, "");
-                  new_item[key][index] = new_item[key][index] || [];
-                  new_item[key][index].push(current_item[key][chave]);
+                if (typeof current_item[key] === 'object') {
+                  if (rgx_array.test(chave)) {
+                    var index = chave.replace(rgx_array, "");
+                    new_item[key][index] = new_item[key][index] || [];
+                    new_item[key][index].push(current_item[key][chave]);
+                  } else {
+                    var index = chave.replace(rgx_array, "");
+                    new_item[key][index] = current_item[key][chave];
+                  }
                 } else {
-                  var index = chave.replace(rgx_array, "");
-                  new_item[key][index] = current_item[key][chave];
+                  new_item[key] = current_item[key][chave];
                 }
-              } else {
-                new_item[key] = current_item[key][chave];
               }
             }
-          }
-        } else {
-          if (rgx_array_empty.test(key)) {
-            new_item[key.replace(rgx_array_empty, "")] = current_item[key].replace('\\', ',').split(',').map(function (trim) {
-              return trim.trim();
-            });
-
           } else {
-            new_item[key] = current_item[key];
+            if (rgx_array_empty.test(key)) {
+              new_item[key.replace(rgx_array_empty, "")] = current_item[key].replace('\\', ',').split(',').map(function (trim) {
+                return trim.trim();
+              });
+
+            } else {
+              new_item[key] = current_item[key];
+            }
           }
         }
       }
@@ -184,7 +186,7 @@ $(function () {
     console_erros();
   }
 
-  function request(el, index){
+  function request(el, index) {
     $.ajax({
       type: "POST",
       url: path_product,
@@ -251,7 +253,7 @@ $(function () {
   }
 
   function console_erros() {
-    $(document).removeClass('table-erro ');
+    $(document).removeClass('table-erro');
     if (_erro) {
       console.log(_erro)
       for (const key in _erro) {
