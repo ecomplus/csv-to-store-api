@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="stylesheet" type="text/css" media="screen" href="assets/css/main.css" />
 </head>
+<style>
+    .erros {
+        padding: 1em;
+    }
+</style>
 
 <body>
     <main>
@@ -41,10 +46,11 @@
                                     <label for="file" class="label-input">Importar CSV</label>
                                 </span>
                             </li>
-                            <li id="li-login"><span class="li-label" id="action-login" style="cursor:pointer"><a href="#modal-login"
-                                        class="modal-trigger">Loggar</a></span>
+                            <li id="li-login"><span class="li-label" id="action-login" style="cursor:pointer"><a
+                                        href="#modal-login" class="modal-trigger">Loggar</a></span>
                             </li>
-                            <li id="li-request"><span class="li-label" id="action-request" style="cursor:pointer">Enviar para api</span>
+                            <li id="li-request"><span class="li-label" id="action-request" style="cursor:pointer">Enviar
+                                    para api</span>
                             </li>
                         </ul>
                     </div>
@@ -90,7 +96,7 @@
                         <label for="password">Password</label>
                     </div>
                 </div>
-                <button type="button" class="waves-effect waves-green btn-flat" id="action-loggar">Loggar</button>                
+                <button type="button" class="waves-effect waves-green btn-flat" id="action-loggar">Loggar</button>
             </form>
             <div id="erro"></div>
         </div>

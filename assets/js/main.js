@@ -3,13 +3,17 @@ $(function () {
 
   var path_login = 'https://api.e-com.plus/v1/_login.json?username';
   var path_product = 'https://api.e-com.plus/v1/products.json';
-
+  var path_api = 'https://api.e-com.plus/v1';
   var _id;
   var _store_id;
   var _key;
   var _data;
   var _erro = [];
-
+  var total = 0;
+  var success = 0;
+  var fail = 0;
+  var pending = 0;
+  var _currentSync = 0;
   var btn_login = $('#action-loggar');
   var btn_send = $('#action-request');
   var _input = $('#file');
@@ -20,7 +24,6 @@ $(function () {
   btn_send.unbind('click').on('click', insert_product);
 
   function parse_cvs() {
-
     $('input[type=file]').parse({
       config: {
         header: true,
@@ -28,12 +31,11 @@ $(function () {
         complete: function (results) {
           //
           _data = results['data'];
+          table_element(results)
+          total = _data.length
+          pending = _data.length
+          updateCounts()
           //
-          //verify_csv(results['data']);
-          table_element(results);
-          count_status({ all: _data.length, completed: 0, progress: _data.length, erro: 0 });
-          //
-
           $('#li-import').addClass('valid');
         }
       }
@@ -134,7 +136,6 @@ $(function () {
               for (const chave in current_item[key]) {
 
                 new_item[key] = new_item[key] || {};
-
                 if (typeof current_item[key] === 'object') {
                   if (rgx_array.test(chave)) {
                     var index = chave.replace(rgx_array, "");
@@ -162,7 +163,11 @@ $(function () {
         }
       }
     }
-    console.log(JSON.stringify(new_item, undefined, 4));
+
+    if (new_item._id) {
+      delete new_item._id
+    }
+
     return JSON.stringify(new_item);
   }
 
@@ -178,47 +183,55 @@ $(function () {
       return;
     }
 
-    _data.forEach(function (el, index) {
-      setTimeout(function () {
-        request(el, index)
-      }, 1000 * index);
-    });
-    console_erros();
+    recursiveRequest(_data)
   }
 
-  function request(el, index) {
-    $.ajax({
-      type: "POST",
-      url: path_product,
+  function recursiveRequest (data) {
+    console.log('Envio recursivo')
+    var url = ''
+    var method = ''
+    if (data[_currentSync]._id) {
+      url = `${path_api}/products/${data[_currentSync]._id}.json`
+      method = 'PATCH'
+    } else {
+      url = '/products.json'
+      method = 'POST'
+    }
+
+    var options = {
+      type: method,
+      url,
       headers: {
         'X-Store-ID': _store_id,
         'X-Access-Token': _key,
         'X-My-Id': _id
       },
-      data: verify_schema(el),
-      contentType: "application/json",
-      dataType: 'json',
-      success: function (res) {
-        insert_success(index);
-      },
-      error: function (err) {
-        insert_fail(err, index);
-      }
-    });
-  }
-
-  function insert_fail(err, id) {
-    if (err.responseJSON.error_code) {
-      var erro = {}
-      erro['key'] = id;
-      erro['message'] = err.responseJSON.user_message.pt_br;
-      _erro.push(erro);
+      data: verify_schema(data[_currentSync]),
+      contentType: 'application/json',
+      dataType: 'json'
     }
-    return;
-  }
 
-  function insert_success(id) {
-
+    if (data[_currentSync]) {
+      $.ajax(options)
+        .done(function (r) {
+          success++
+          pending--
+          updateCounts()
+          $(`ul[data-key="${_currentSync}"] .collapsible-header`).css('background-color', '#4caf50')
+          recursiveRequest(data)
+        }).fail(function (e) {
+          console.log(e)
+          fail++
+          pending--
+          updateCounts()
+          $(`ul[data-key="${_currentSync}"] .collapsible-header`).css('background-color', '#B71C1C')
+          $(`<div class="erros"><p>${e.responseJSON.user_message.pt_br}</p></div>`).appendTo($(`ul[data-key="${_currentSync}"] li`))
+          recursiveRequest(data)
+        })
+      _currentSync++
+    } else {
+      console.log('FIM')
+    }
   }
 
   function is_valid() {
@@ -230,7 +243,6 @@ $(function () {
   }
 
   function logged(res) {
-
     _id = res.my_id;
     _key = res.access_token;
     $('.modal').modal('close');
@@ -244,26 +256,14 @@ $(function () {
 
   }
 
-  function count_status(count) {
-    $('#li-all .li-value').text(count.all);
-    $('#li-complete .li-value').text(count.completed);
-    $('#li-in-progress .li-value').text(count.progress);
-    $('#li-erro .li-value').text(count.erro);
-
+  function updateCounts() {
+    $('#li-all .li-value').text(total)
+    $('#li-complete .li-value').text(success)
+    $('#li-in-progress .li-value').text(pending)
+    $('#li-erro .li-value').text(fail)
   }
 
-  function console_erros() {
-    $(document).removeClass('table-erro');
-    if (_erro) {
-      console.log(_erro)
-      for (const key in _erro) {
-        console.log(key)
-      }
-    }
-
-  }
-
-  function parseDotNotation(str, val, obj) {
+  function parseDotNotation (str, val, obj) {
     var currentObj = obj, //objeto atual
       keys = str.split("."), // explode '.' da chave e transforma em array
       i, l = Math.max(1, keys.length - 1), // set o tamanho do array das array em l
@@ -276,6 +276,7 @@ $(function () {
     }
     var reg = /^-?\d+\,?\.?\d*$/; // verificar se é 0,00 ou 0.00
     if (reg.test(val)) {
+      console.log(val)
       currentObj[keys[i]] = parseFloat(val.replace(',', '.').trim());
     } else {
       currentObj[keys[i]] = val.trim();    // objeto com a chave na posição de i recebe o valor 
