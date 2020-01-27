@@ -127,14 +127,18 @@ $(function () {
 
     for (const key in current_item) {
       if (current_item.hasOwnProperty(key)) {
-        if (current_item[key] != '') {
-          if (typeof current_item[key] === 'object') {
-            if (rgx_array.test(key)) {
-              new_item[key.replace(rgx_array, "")] = new_item[key.replace(rgx_array, "")] || [];
-              new_item[key.replace(rgx_array, "")].push(current_item[key]);
-            } else {
-              for (const chave in current_item[key]) {
+        if (current_item[key] !== '') {
+          console.log(current_item[key])
 
+          if (/\[([^\]]+)\]/g.test(key) === true) {
+            console.log(key)
+            console.log(current_item[key])
+            new_item[key.replace(rgx_array, "")] = new_item[key.replace(rgx_array, "")] || [];
+            new_item[key.replace(rgx_array, "")].push(current_item[key]);
+            console.log(new_item)
+          } else {
+            if (typeof current_item[key] === 'object') {
+              for (const chave in current_item[key]) {
                 new_item[key] = new_item[key] || {};
                 if (typeof current_item[key] === 'object') {
                   if (rgx_array.test(chave)) {
@@ -149,15 +153,12 @@ $(function () {
                   new_item[key] = current_item[key][chave];
                 }
               }
-            }
-          } else {
-            if (rgx_array_empty.test(key)) {
-              new_item[key.replace(rgx_array_empty, "")] = current_item[key].replace('\\', ',').split(',').map(function (trim) {
-                return trim.trim();
-              });
-
             } else {
-              new_item[key] = current_item[key];
+              var val = current_item[key];
+              if (key === 'price') {
+                val = Number(val)
+              }
+              new_item[key] = val
             }
           }
         }
@@ -186,15 +187,15 @@ $(function () {
     recursiveRequest(_data)
   }
 
-  function recursiveRequest (data) {
+  function recursiveRequest(data) {
     console.log('Envio recursivo')
     var url = ''
     var method = ''
     if (data[_currentSync]._id) {
-      url = `${path_api}/products/${data[_currentSync]._id}.json`
+      url = `https://api.e-com.plus/v1/products/${data[_currentSync]._id}.json`
       method = 'PATCH'
     } else {
-      url = '/products.json'
+      url = 'https://api.e-com.plus/v1/products.json'
       method = 'POST'
     }
 
@@ -263,7 +264,7 @@ $(function () {
     $('#li-erro .li-value').text(fail)
   }
 
-  function parseDotNotation (str, val, obj) {
+  function parseDotNotation(str, val, obj) {
     var currentObj = obj, //objeto atual
       keys = str.split("."), // explode '.' da chave e transforma em array
       i, l = Math.max(1, keys.length - 1), // set o tamanho do array das array em l
